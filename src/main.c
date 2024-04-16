@@ -90,9 +90,11 @@ int main(int argc, char* argv[])
 		}
 	}
 
+	
 	wread(byte, file, binary, img); // lê os dados de file em binario e converte para .bmp
 	fclose(file);
 	rread(img); // recupera os dados da imagem 
+
 
 	return 0;
 }
