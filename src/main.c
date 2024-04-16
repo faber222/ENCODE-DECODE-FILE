@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "libbmp.h"
+#include "../libs/libbmp.h"
 
 void byteToBinary(unsigned char byte, char* binary) {
 	int i;
@@ -9,29 +9,29 @@ void byteToBinary(unsigned char byte, char* binary) {
 	binary[8] = '\0';
 }
 
-int main(int argc, char* argv[])
-{
-	bmp_img img;
-	bmp_img_init_df(&img, 512, 512);
-	FILE* file;
+// recuperar dado da imagem
+void rread(bmp_img img) {
+	// Ler a imagem BMP recém-criada
+	bmp_img_read(&img, "triangulo.bmp");
 
-	unsigned char byte;
-	char binary[9]; // 8 bits + 1 para o caractere nulo
-	int i;
-
-	// Abrir o arquivo binário para leitura
-	file = fopen("arquivo.txt", "rb");
-	if (file == NULL) {
-		perror("Erro ao abrir o arquivo");
-		return 1;
-	}
-
+	// Exemplo de acesso aos pixels da imagem
 	for (size_t y = 0; y < 512; y++) {
 		for (size_t x = 0; x < 512; x++) {
-			bmp_pixel_init(&img.img_pixels[y][x], 255, 0, 0);
+			unsigned char r = img.img_pixels[y][x].red;
+			unsigned char g = img.img_pixels[y][x].green;
+			unsigned char b = img.img_pixels[y][x].blue;
+			// printf("Pixel (%zu,%zu): R=%u, G=%u, B=%u\n", y, x, r, g, b);
+			// Se o pixel for preto ou branco, imprimir seus dados
+			if ((r == 0 && g == 0 && b == 0)) {
+				printf("Pixel (%zu,%zu): 0\n", y, x);
+			} else if ((r == 250 && g == 250 && b == 250)) {
+				printf("Pixel (%zu,%zu): 1\n", y, x);
+			}
 		}
 	}
+}
 
+void wread(char byte, FILE* file, char binary[9], bmp_img img) {
 	int y = 0;
 	int x = 0;
 	// Ler o arquivo byte a byte e imprimir sua representação binária
@@ -61,29 +61,38 @@ int main(int argc, char* argv[])
 		}
 	}
 	// Fechar o arquivo
-	fclose(file);
 
 	bmp_img_write(&img, "triangulo.bmp");
 	bmp_img_free(&img);
+}
 
-	// Ler a imagem BMP recém-criada
-	bmp_img_read(&img, "triangulo.bmp");
+int main(int argc, char* argv[])
+{
+	bmp_img img;
+	bmp_img_init_df(&img, 512, 512);// define o tamanho da imagem
+	FILE* file;
 
-	// Exemplo de acesso aos pixels da imagem
+	unsigned char byte;
+	char binary[9]; // 8 bits + 1 para o caractere nulo
+	int i;
+
+	// Abrir o arquivo binário para leitura
+	file = fopen("arquivo.txt", "rb");
+	if (file == NULL) {
+		perror("Erro ao abrir o arquivo");
+		return 1;
+	}
+
+	// pinta a imagem de vermelho
 	for (size_t y = 0; y < 512; y++) {
 		for (size_t x = 0; x < 512; x++) {
-			unsigned char r = img.img_pixels[y][x].red;
-			unsigned char g = img.img_pixels[y][x].green;
-			unsigned char b = img.img_pixels[y][x].blue;
-			// printf("Pixel (%zu,%zu): R=%u, G=%u, B=%u\n", y, x, r, g, b);
-			// Se o pixel for preto ou branco, imprimir seus dados
-			if ((r == 0 && g == 0 && b == 0)) {
-				printf("Pixel (%zu,%zu): 0\n", y, x);
-			} else if ((r == 250 && g == 250 && b == 250)) {
-				printf("Pixel (%zu,%zu): 1\n", y, x);
-			}
+			bmp_pixel_init(&img.img_pixels[y][x], 255, 0, 0);
 		}
 	}
+
+	wread(byte, file, binary, img); // lê os dados de file em binario e converte para .bmp
+	fclose(file);
+	rread(img); // recupera os dados da imagem 
 
 	return 0;
 }

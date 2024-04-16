@@ -1,15 +1,16 @@
 CC = gcc
-OBJECTS = libbmp.c main.c
+OBJECTS = ../libs/libbmp.c main.c
 LIBS =
 CFLAGS = -Wall -Wextra -O2
-BINDIR = $(DESTDIR)/usr/bin
+BINDIR = output
 NAME = main
+OUTPUT = $(BINDIR)/$(NAME)
 
 checkerboard: $(OBJECTS)
-	$(CC) $(CFLAGS) -o $(NAME) $(OBJECTS) $(LIBS) 2>/dev/null
+	$(CC) $(CFLAGS) -o $(OUTPUT) $(OBJECTS) $(LIBS) 2>/dev/null
 
 clean:
-	rm $(NAME)
+	rm -f $(OUTPUT)
 
 run:
-	./$(NAME)
+	./$(OUTPUT)
