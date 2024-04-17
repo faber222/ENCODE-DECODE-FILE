@@ -12,25 +12,33 @@ void byteToBinary(unsigned char byte, char* binary) {
 unsigned char bitsToByte(char bits[]) {
 	unsigned char byte = 0;
 	int i;
+
 	for (i = 0; i < 8; i++) {
 		if (bits[i] == '1') {
-			byte |= (1 << (7 - i)); // Definir o bit correspondente em byte
-		} else if (bits[i] != '0') {
-			// Se o caractere não for '0' nem '1', indicando um erro
+			byte |= (1 << (7 - i)); // Definir o bit como 1
+		} else if (bits[i] == '0') {
+			// Definir o bit como 0
+			byte &= ~(1 << (7 - i)); // Inverter o bit correspondente
+		} else {
+			// Caractere inválido
 			printf("Erro: O array de bits contém caracteres inválidos.\n");
 			return 0; // Ou retorne um valor que indique erro
 		}
 	}
+
 	return byte;
 }
 
 // recuperar dado da imagem
 void rread(bmp_img img) {
+	FILE* arquivo; // Ponteiro para o arquivo binário
 	// Ler a imagem BMP recém-criada
 	bmp_img_read(&img, "triangulo.bmp");
 	int j = 0;
 	printf("\nrecovered data\n");
 	char bits[9];
+	unsigned char byte; // Variável para armazenar o byte convertido
+	arquivo = fopen("arquivo_binario_recuperado.bin", "wb");
 	// Exemplo de acesso aos pixels da imagem
 	for (size_t y = 0; y < 512; y++) {
 		for (size_t x = 0; x < 512; x++) {
@@ -52,9 +60,17 @@ void rread(bmp_img img) {
 				bits[j] = '\0'; // Adiciona terminador de string
 				printf("%s\n", bits);
 				j = 0;
+				byte = bitsToByte(bits);
+				// Escrever o byte no arquivo
+				if (fwrite(&byte, sizeof(char), 1, arquivo) != 1) {
+					printf("Erro: Falha ao escrever o byte no arquivo.\n");
+					fclose(arquivo);
+					return 1;
+				}
 			}
 		}
 	}
+	fclose(arquivo); // Fecha o arquivo após a leitura
 	printf("\n");
 }
 
@@ -93,8 +109,11 @@ void wread(char byte, FILE* file, char* binary, bmp_img img) {
 	bmp_img_free(&img);
 }
 
-int main(int argc, char* argv[])
-{
+void drawImg(bmp_img img) {
+
+}
+
+int main(int argc, char* argv[]) {
 	bmp_img img;
 	bmp_img_init_df(&img, 512, 512);// define o tamanho da imagem
 	FILE* file;
@@ -102,13 +121,8 @@ int main(int argc, char* argv[])
 	unsigned char byte;
 	char binary[9]; // 8 bits + 1 para o caractere nulo
 	int i;
-
-	// Abrir o arquivo binário para leitura
-	file = fopen("arquivo.txt", "rb");
-	if (file == NULL) {
-		perror("Erro ao abrir o arquivo");
-		return 1;
-	}
+	int opcao;
+	char entrada[1000]; // Array para armazenar a entrada do usuário
 
 	// pinta a imagem de vermelho
 	for (size_t y = 0; y < 512; y++) {
@@ -117,11 +131,49 @@ int main(int argc, char* argv[])
 		}
 	}
 
+	// Apresenta o menu de opções
+	printf("Escolha uma opção:\n");
+	printf("1. Criar imagem bmp\n");
+	printf("2. Recuperar dados da imagem\n");
+	printf("0. Sair\n");
 
-	wread(byte, file, binary, img); // lê os dados de file em binario e converte para .bmp
-	fclose(file);
-	rread(img); // recupera os dados da imagem 
+	// Captura a entrada do usuário
+	printf("Digite o número da opção desejada: ");
+	scanf("%d", &opcao);
 
+	while (getchar() != '\n');
+	// Verifica a opção escolhida pelo usuário
+	switch (opcao) {
+		case 1:
+			printf("Você escolheu a opção 1.\n");
+			printf("Digite o nome do arquivo\n");
+			// Captura a entrada do usuário até que o usuário pressione Enter
+			fgets(entrada, sizeof(entrada), stdin);
+			entrada[strcspn(entrada, "\n")] = '\0';
+			// Abrir o arquivo binário para leitura
+			file = fopen(&entrada, "rb");
+			if (file == NULL) {
+				perror("Erro ao abrir o arquivo");
+				return 1;
+			}
+			wread(byte, file, binary, img); // lê os dados de file em binario e converte para .bmp
+			fclose(file);
+			break;
+		case 2:
+			printf("Você escolheu a opção 2.\n");
+			rread(img); // recupera os dados da imagem 
+			break;
+		case 0:
+			printf("Saindo do programa...\n");
+			return 0; // Encerra o programa
+		default:
+			printf("Opção inválida\n");
+			break;
+	}
+
+	// wread(byte, file, binary, img); // lê os dados de file em binario e converte para .bmp
+	// fclose(file);
+	// rread(img); // recupera os dados da imagem 
 
 	return 0;
 }
