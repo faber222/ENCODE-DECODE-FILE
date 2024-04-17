@@ -41,3 +41,11 @@ main ()
 
 * Since the C and C++ version have many things in common, both of them are maintained in a single repository.  
 To report language specific things, make use of the `C` or `C++` label.
+
+## Run
+```shell
+$ git clone https://github.com/faber222/IMAGE-COPY.git
+$ cd src/
+$ make
+$ make run
+```
