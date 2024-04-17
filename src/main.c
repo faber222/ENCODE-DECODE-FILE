@@ -4,7 +4,7 @@
 void byteToBinary(unsigned char byte, char* binary) {
 	int i;
 	for (i = 7; i >= 0; --i) {
-		binary[7 - i] = (byte & (1 << i)) ? '1' : '0';
+		binary[7 - i] = (byte & (1 << i)) ? '1' : '0'; // movimenta o numero 1, n casas para a esquerda e faz um AND com o byte, se verdadeiro, bynary recebe 1, se falso 0
 	}
 	binary[8] = '\0';
 }
