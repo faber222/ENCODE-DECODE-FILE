@@ -30,15 +30,14 @@ unsigned char bitsToByte(char bits[]) {
 }
 
 // recuperar dado da imagem
-void rread(bmp_img img) {
-	FILE* arquivo; // Ponteiro para o arquivo binário
+void rread(bmp_img img, FILE* arquivo) {
 	// Ler a imagem BMP recém-criada
 	bmp_img_read(&img, "triangulo.bmp");
 	int j = 0;
 	printf("\nrecovered data\n");
 	char bits[9];
 	unsigned char byte; // Variável para armazenar o byte convertido
-	arquivo = fopen("arquivo_binario_recuperado.bin", "wb");
+
 	// Exemplo de acesso aos pixels da imagem
 	for (size_t y = 0; y < 512; y++) {
 		for (size_t x = 0; x < 512; x++) {
@@ -55,7 +54,7 @@ void rread(bmp_img img) {
 				}
 				j++;
 			}
-
+			
 			if (j == 8) {
 				bits[j] = '\0'; // Adiciona terminador de string
 				printf("%s\n", bits);
@@ -70,7 +69,7 @@ void rread(bmp_img img) {
 			}
 		}
 	}
-	fclose(arquivo); // Fecha o arquivo após a leitura
+	
 	printf("\n");
 }
 
@@ -110,7 +109,12 @@ void wread(char byte, FILE* file, char* binary, bmp_img img) {
 }
 
 void drawImg(bmp_img img) {
-
+	// pinta a imagem de vermelho
+	for (size_t y = 0; y < 512; y++) {
+		for (size_t x = 0; x < 512; x++) {
+			bmp_pixel_init(&img.img_pixels[y][x], 255, 0, 0);
+		}
+	}
 }
 
 int main(int argc, char* argv[]) {
@@ -124,12 +128,7 @@ int main(int argc, char* argv[]) {
 	int opcao;
 	char entrada[1000]; // Array para armazenar a entrada do usuário
 
-	// pinta a imagem de vermelho
-	for (size_t y = 0; y < 512; y++) {
-		for (size_t x = 0; x < 512; x++) {
-			bmp_pixel_init(&img.img_pixels[y][x], 255, 0, 0);
-		}
-	}
+	drawImg(img);
 
 	// Apresenta o menu de opções
 	printf("Escolha uma opção:\n");
@@ -161,7 +160,18 @@ int main(int argc, char* argv[]) {
 			break;
 		case 2:
 			printf("Você escolheu a opção 2.\n");
-			rread(img); // recupera os dados da imagem 
+			printf("Digite o nome do arquivo\n");
+			// Captura a entrada do usuário até que o usuário pressione Enter
+			fgets(entrada, sizeof(entrada), stdin);
+			entrada[strcspn(entrada, "\n")] = '\0';
+			// Abrir o arquivo binário para leitura
+			file = fopen(&entrada, "wb");
+			if (file == NULL) {
+				perror("Erro ao abrir o arquivo");
+				return 1;
+			}
+			rread(img, file); // recupera os dados da imagem 
+			fclose(file);
 			break;
 		case 0:
 			printf("Saindo do programa...\n");
