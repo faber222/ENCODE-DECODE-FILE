@@ -32,52 +32,70 @@ void rread(bmp_img img, FILE* arquivo) {
     int j = 0;
     char bits[N];
     unsigned char byte; // Variável para armazenar o byte convertido
+    int k = 1;
+    char nome_arquivo[30];
 
-    // Lê a imagem BMP fornecida
-    bmp_img_read(&img, "./assets/imagem.bmp");
-
-    // Exemplo de acesso aos pixels da imagem
-    for (size_t y = 0; y < Y; y++) {
-        for (size_t x = 0; x < X; x++) {
-            unsigned char r = img.img_pixels[y][x].red;
-            unsigned char g = img.img_pixels[y][x].green;
-            unsigned char b = img.img_pixels[y][x].blue;
-            // Se o pixel for preto ou branco, extrai o bit correspondente
-            if ((r == 0 && g == 0 && b == 0) || (r == 250 && g == 250 && b == 250)) {
-                if (r == 0) {
-                    bits[j] = '0';
-                } else {
-                    bits[j] = '1';
+    while (1) {
+        sprintf(nome_arquivo, "./encodedFiles/imagem%d.bmp", k);
+        // Tenta abrir a próxima imagem gerada
+        if (bmp_img_read(&img, nome_arquivo) != BMP_OK) {
+            break;  // Sai do loop se não houver mais imagens
+        }
+        // Exemplo de acesso aos pixels da imagem
+        for (size_t y = 0; y < Y; y++) {
+            for (size_t x = 0; x < X; x++) {
+                unsigned char r = img.img_pixels[y][x].red;
+                unsigned char g = img.img_pixels[y][x].green;
+                unsigned char b = img.img_pixels[y][x].blue;
+                // Se o pixel for preto ou branco, extrai o bit correspondente
+                if ((r == 0 && g == 0 && b == 0) || (r == 250 && g == 250 && b == 250)) {
+                    if (r == 0) {
+                        bits[j] = '0';
+                    } else {
+                        bits[j] = '1';
+                    }
+                    j++;
                 }
-                j++;
-            }
 
-            if (j == 8) {
-                bits[j] = '\0'; // Adiciona um terminador de string
-                j = 0;
-                byte = bitsToByte(bits);
-                // Escreve o byte no arquivo
-                if (fwrite(&byte, sizeof(char), 1, arquivo) != 1) {
-                    printf("Erro: Falha ao escrever o byte no arquivo.\n");
-                    fclose(arquivo);
-                    return 1;
+                if (j == 8) {
+                    bits[j] = '\0'; // Adiciona um terminador de string
+                    j = 0;
+                    byte = bitsToByte(bits);
+                    // Escreve o byte no arquivo
+                    if (fwrite(&byte, sizeof(char), 1, arquivo) != 1) {
+                        printf("Erro: Falha ao escrever o byte no arquivo.\n");
+                        fclose(arquivo);
+                        return 1;
+                    }
                 }
             }
         }
+        // Fecha a imagem atual
+        bmp_img_free(&img);
+        k++;
     }
+
 }
 
 // Lê um arquivo byte a byte, converte cada byte em uma sequência de bits e desenha uma imagem com base nesses bits
 void wread(char byte, FILE* file, char* binary, bmp_img img) {
     int y = 0;
     int x = 0;
+    int k = 1;
+    char caminho[30];
+
     // Lê o arquivo byte a byte e converte cada byte em sua representação binária
     while (fread(&byte, sizeof(unsigned char), 1, file) == 1) {
         byteToBinary(byte, binary);
         for (size_t i = 0; i < sizeof(binary); i++) {
             // Limita a quantidade máxima de pixels a 510x510
             if (y == Y - 2) {
-                exit(0);
+                sprintf(caminho, "./encodedFiles/imagem%d.bmp", k);
+                bmp_img_write(&img, caminho);
+                y = 0;
+                x = 0;
+                k++;
+                // exit(0);
             }
 
             if (x == X - 2) {
@@ -92,8 +110,10 @@ void wread(char byte, FILE* file, char* binary, bmp_img img) {
             x++;
         }
     }
-    // Escreve a imagem BMP resultante no arquivo
-    bmp_img_write(&img, "./assets/imagem.bmp");
+
+    sprintf(caminho, "./encodedFiles/imagem%d.bmp", k);
+    bmp_img_write(&img, caminho);
+
     bmp_img_free(&img);
 }
 
@@ -110,7 +130,8 @@ void drawImg(bmp_img img) {
 FILE* openFile(int i) {
     FILE* file;
     char entrada[100];
-    printf("Digite o caminho do arquivo com a extensao: ");
+    char entrada2[100];
+    printf("Digite o nome do arquivo a ser decodificado com a extensao: ");
     fgets(entrada, sizeof(entrada), stdin);
     entrada[strcspn(entrada, "\n")] = '\0'; // Remove o caractere de nova linha do final da entrada
 
@@ -118,7 +139,8 @@ FILE* openFile(int i) {
     if (i == 1) {
         file = fopen(&entrada, "rb");
     } else {
-        file = fopen(&entrada, "wb");
+        sprintf(entrada2, "./decodedFiles/%s", &entrada);
+        file = fopen(&entrada2, "wb");
     }
 
     if (file == NULL) {
