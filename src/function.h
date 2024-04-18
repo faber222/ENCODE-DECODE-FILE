@@ -2,6 +2,9 @@
 
 #ifndef FILE_H
 #define FILE_H
+#define X 512
+#define Y 512
+#define N 9
 
 #include <stdio.h>
 #include "../libs/libbmp.h"
