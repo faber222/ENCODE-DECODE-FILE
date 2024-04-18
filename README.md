@@ -1,6 +1,6 @@
 # libbmp
 A simple Bitmap (BMP) library written in C without dependencies.  
-For a native C++ version look inside the `CPP` folder.
+For a native C++ version look: [libbmp](https://github.com/marc-q/libbmp.git)
 
 ### Example: Checkerboard-pattern
 
