@@ -1,6 +1,5 @@
 #include "function.h"
 
-
 // Converte um byte em sua representação binária
 void byteToBinary(unsigned char byte, char* binary) {
     int i;
@@ -29,23 +28,23 @@ unsigned char bitsToByte(char bits[]) {
 }
 
 // Lê os pixels de uma imagem BMP e extrai os dados para formar um byte, escrevendo esse byte em um arquivo
-void rread(BmpImg img, FILE* arquivo) {
+void rread(BmpImg& img, string outputPath) {
     int j = 0;
     char bits[N];
     unsigned char byte; // Variável para armazenar o byte convertido
     int k = 1;
-    char nome_arquivo[30];
+    string fileName;
 
-    while (1) {
-        sprintf(nome_arquivo, "./encodedFiles/imagem%d.bmp", k);
+    while (true) {
+        fileName = "./encodedFiles/imagem" + to_string(k) + ".bmp";
         // Tenta abrir a próxima imagem gerada
-        if (img.read(nome_arquivo) != BMP_OK) {
+        if (img.read(fileName) != BMP_OK) {
             break;  // Sai do loop se não houver mais imagens
         }
         // Exemplo de acesso aos pixels da imagem
         for (size_t y = 0; y < Y; y++) {
             for (size_t x = 0; x < X; x++) {
-                unsigned char r = img.red_at(x,y);
+                unsigned char r = img.red_at(x, y);
                 unsigned char g = img.green_at(x, y);
                 unsigned char b = img.blue_at(x, y);
                 // Se o pixel for preto ou branco, extrai o bit correspondente
@@ -63,90 +62,78 @@ void rread(BmpImg img, FILE* arquivo) {
                     j = 0;
                     byte = bitsToByte(bits);
                     // Escreve o byte no arquivo
-                    if (fwrite(&byte, sizeof(char), 1, arquivo) != 1) {
-                        printf("Erro: Falha ao escrever o byte no arquivo.\n");
-                        fclose(arquivo);
+                    ofstream outFile(outputPath, ios::binary | ios::app);
+                    if (!outFile.is_open()) {
+                        cerr << "Erro ao abrir o arquivo de saída." << endl;
                         return;
                     }
+                    outFile.write(reinterpret_cast< char* >(&byte), sizeof(char));
+                    outFile.close();
                 }
             }
         }
-        // Fecha a imagem atual
-        // bmp_img_free(&img);
         k++;
     }
-
 }
 
 // Lê um arquivo byte a byte, converte cada byte em uma sequência de bits e desenha uma imagem com base nesses bits
-void wread(char byte, FILE* file, char* binary, BmpImg img) {
-    int y = 0;
-    int x = 0;
-    int k = 1;
-    char caminho[30];
+void wread(BmpImg& img, string inputPath) {
+    fstream file;
+    string path;
+    int y = 0, x = 0, k = 1;
+    char byte;
+    char binary[8]; // Tamanho fixo para armazenar a representação binária de um byte
 
-    // Lê o arquivo byte a byte e converte cada byte em sua representação binária
-    while (fread(&byte, sizeof(unsigned char), 1, file) == 1) {
-        byteToBinary(byte, binary);
-        for (size_t i = 0; i < sizeof(binary); i++) {
-            // Limita a quantidade máxima de pixels a 510x510
-            if (y == Y - 2) {
-                sprintf(caminho, "./encodedFiles/imagem%d.bmp", k);
-                img.write(caminho);
-                y = 0;
-                x = 0;
-                k++;
-                // exit(0);
+    file.open(inputPath, ios::in | ios::binary);
+    if (file.is_open()) {
+        // Lê o arquivo byte a byte e converte cada byte em sua representação binária
+        while (file.read(&byte, sizeof(char))) {
+            byteToBinary(byte, binary);
+            for (size_t i = 0; i < 8; i++) {
+                // Limita a quantidade máxima de pixels a 510x510
+                if (y == Y - 2) {
+                    path = "./encodedFiles/imagem" + std::to_string(k) + ".bmp";
+                    img.write(path);
+                    y = x = 0;
+                    k++;
+                }
+                if (x == X - 2) {
+                    y++;
+                    x = 0;
+                }
+                if (binary[i] == '1') {
+                    img.set_pixel(x, y, 250, 250, 250); // Define o pixel como branco
+                } else {
+                    img.set_pixel(x, y, 0, 0, 0); // Define o pixel como preto
+                }
+                x++;
             }
-
-            if (x == X - 2) {
-                y++;
-                x = 0;
-            }
-            if (binary[i] == '1') {
-                img.set_pixel(x , y, 250, 250, 250); // Define o pixel como branco
-            } else {
-                img.set_pixel(x , y, 0, 0, 0); // Define o pixel como preto
-            }
-            x++;
         }
+        path = "./encodedFiles/imagem" + std::to_string(k) + ".bmp";
+        img.write(path);
+        file.close();
+    } else {
+        cerr << "ERRO: arquivo não foi aberto ou não existe" << endl;
     }
-
-    sprintf(caminho, "./encodedFiles/imagem%d.bmp", k);
-    img.write(caminho);
-
-    // bmp_img_free(&img);
 }
 
 // Pinta toda a imagem de vermelho
-void drawImg(BmpImg img) {
-    for (size_t y = (Y - 1); y >= 0; y--) {
-        for (size_t x = (X - 1); x >= 0; x--) {
+void drawImg(BmpImg& img) {
+    for (int y = 0; y < Y; y++) {
+        for (int x = 0; x < X; x++) {
             img.set_pixel(x, y, 255, 0, 0); // Define o pixel como vermelho
         }
     }
+
 }
 
 // Função para lidar com a entrada do usuário e a abertura do arquivo
-FILE* openFile(int i) {
-    FILE* file;
-    char entrada[100];
-    char entrada2[100];
-    printf("Digite o nome do arquivo a ser decodificado com a extensao: ");
-    fgets(entrada, sizeof(entrada), stdin);
-    entrada[strcspn(entrada, "\n")] = '\0'; // Remove o caractere de nova linha do final da entrada
-
-    // Abre o arquivo no modo especificado
-    if (i == 1) {
-        file = fopen(entrada, "rb");
-    } else {
-        sprintf(entrada2, "./decodedFiles/%s", &entrada);
-        file = fopen(entrada2, "wb");
+string openFile(int i) {
+    string keyboard;
+    cout << "Digite o caminho do arquivo com a extensao: ";
+    cin >> keyboard;
+    if (i == DOIS) {
+        keyboard = "./decodedFiles/" + keyboard;
     }
-
-    if (file == NULL) {
-        perror("Erro ao abrir o arquivo");
-        exit(1);
-    }
-    return file;
+    return keyboard;
 }

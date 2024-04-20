@@ -1,49 +1,42 @@
 #include "function.h"
 
 int main(int argc, char* argv[]) {
-	BmpImg img (X, Y);
-	// bmp_img_init_df(&img, X, Y); // Inicializa uma imagem BMP com tamanho 512x512
-	FILE* file;
+	BmpImg img(X, Y);
+	img.init(X, Y); // Inicializa uma imagem BMP com tamanho 512x512
+	drawImg(img); // Desenha a imagem inicial
+	// FILE* file;
+	fstream file;
 
 	unsigned char byte;
 	char binary[N]; // Representação binária de 8 bits mais um para o caractere nulo
 	int opcao;
+	string keyboard;
 
-	drawImg(img); // Desenha a imagem inicial
-
-	// Apresenta o menu de opções para o usuário
-	printf("Escolha uma opção:\n");
-	printf("1. Codificar\n");
-	printf("2. Decodificar\n");
-	printf("0. Sair\n");
-
-	// Captura a entrada do usuário
-	printf("Digite o número da opção desejada: ");
-	scanf("%d", &opcao);
-
-	while (getchar() != '\n'); // Limpa o buffer do teclado
+	cout << "Escolha uma opção:" << endl;
+	cout << "1. Codificar" << endl;
+	cout << "2. Decodificar" << endl;
+	cout << "0. Sair" << endl;
+	cout << "Digite o número da opção desejada: ";
+	cin >> keyboard;
+	opcao = stoi(keyboard);
 
 	// Verifica a opção escolhida pelo usuário
 	switch (opcao) {
-		case 1:
-			printf("Você escolheu a opção 1.\n\n");
-			file = openFile(opcao); // Abre o arquivo de entrada para codificação
-			wread(byte, file, binary, img); // Lê os dados do arquivo em binário e os converte para o formato BMP
-			printf("Dados codificados com sucesso!\n");
-			fclose(file); // Fecha o arquivo de entrada
+		case UM:
+			cout << "Você escolheu a opção " + to_string(UM) << endl << endl;
+			wread(img, openFile(UM));
+			cout << "Dados codificados com sucesso!" << endl;
 			break;
-		case 2:
-			printf("Você escolheu a opção 2.\n\n");
-			file = openFile(opcao); // Abre o arquivo de entrada para decodificação
-			rread(img, file); // Recupera os dados da imagem BMP
-			printf("Dados decodificados com sucesso!\n");
-			fclose(file); // Fecha o arquivo de entrada
+		case DOIS:
+			cout << "Você escolheu a opção " + to_string(DOIS) << endl << endl;
+			rread(img, openFile(DOIS)); // Recupera os dados da imagem BMP
+			cout << "Dados decodificados com sucesso!" << endl;
 			break;
 		case 0:
-			printf("Saindo do programa...\n");
+			cout << "Saindo do programa..." << endl;
 			return 0; // Encerra o programa
 		default:
-			printf("Opção inválida\n");
+			cout << "Opção inválida" << endl;
 			break;
 	}
 	return 0;

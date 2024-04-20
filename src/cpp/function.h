@@ -2,13 +2,17 @@
 
 #ifndef FILE_H
 #define FILE_H
-#define X 512
-#define Y 512
-#define N 9
+#define X 512 // largura da imagem
+#define Y 512 // altura da imagem
+#define N 9 // tamanho do byte
+#define UM 1 // valor usado no switch case para codificacao
+#define DOIS 2 // valor usado no switch case para decodificacao
 
 #include <stdio.h>
 #include <string.h>
 #include <iostream>
+#include <cctype>
+#include <fstream>
 #include "./libs/libbmp.h"
 
 using namespace std;
@@ -17,12 +21,12 @@ void byteToBinary(unsigned char byte, char* binary);
 
 unsigned char bitsToByte(char bits[]);
 
-void rread(BmpImg img, FILE* arquivo);
+void rread(BmpImg& img, string outputPath);
 
-void wread(char byte, FILE* file, char* binary, BmpImg img);
+void wread(BmpImg& img, string inputPath);
 
-void drawImg(BmpImg img);
+void drawImg(BmpImg& img);
 
-FILE* openFile(int i);
+string openFile(int i);
 
 #endif  // FILE_H
