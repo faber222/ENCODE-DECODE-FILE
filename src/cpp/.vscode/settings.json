@@ -1,0 +1,8 @@
+{
+  "C_Cpp_Runner.msvcBatchPath": "",
+  "files.associations": {
+    "*.typ": "typst",
+    "iosfwd": "cpp",
+    "ostream": "cpp"
+  }
+}
