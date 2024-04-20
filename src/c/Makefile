@@ -1,5 +1,5 @@
-CC = g++
-OBJECTS = ./libs/libbmp.cpp main.cpp function.cpp function.h
+CC = gcc
+OBJECTS = ../libs/libbmp.c main.c function.c function.h
 LIBS =
 CFLAGS = -Wall -Wextra -O2
 BINDIR = output
