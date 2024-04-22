@@ -35,6 +35,7 @@ void rread(BmpImg& img, string outputPath) {
     int k = 1;
     string fileName;
 
+    ofstream outFile(outputPath, ios::binary | ios::app);
     while (true) {
         fileName = "./encodedFiles/imagem" + to_string(k) + ".bmp";
         // Tenta abrir a próxima imagem gerada
@@ -62,18 +63,17 @@ void rread(BmpImg& img, string outputPath) {
                     j = 0;
                     byte = bitsToByte(bits);
                     // Escreve o byte no arquivo
-                    ofstream outFile(outputPath, ios::binary | ios::app);
-                    if (!outFile.is_open()) {
-                        cerr << "Erro ao abrir o arquivo de saída." << endl;
-                        return;
-                    }
+                    // if (!outFile.is_open()) {
+                    //     cerr << "Erro ao abrir o arquivo de saída." << endl;
+                    //     return;
+                    // }
                     outFile.write(reinterpret_cast< char* >(&byte), sizeof(char));
-                    outFile.close();
                 }
             }
         }
         k++;
     }
+    outFile.close();
 }
 
 // Lê um arquivo byte a byte, converte cada byte em uma sequência de bits e desenha uma imagem com base nesses bits
