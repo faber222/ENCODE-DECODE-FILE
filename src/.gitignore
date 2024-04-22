@@ -16,6 +16,10 @@
 *_LOCAL_*.txt
 *_REMOTE_*.txt
 
+### Ignorar qualquer arquivo novo ###
+encodedFiles/
+decodedFiles/
+
 ### Linux ###
 *~
 
