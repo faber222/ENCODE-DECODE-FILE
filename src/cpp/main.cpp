@@ -4,7 +4,6 @@ int main(int argc, char* argv[]) {
 	BmpImg img(X, Y);
 	img.init(X, Y); // Inicializa uma imagem BMP com tamanho 512x512
 	drawImg(img); // Desenha a imagem inicial
-	// FILE* file;
 	fstream file;
 
 	unsigned char byte;

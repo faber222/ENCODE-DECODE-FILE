@@ -13,9 +13,12 @@
 #include <iostream>
 #include <cctype>
 #include <fstream>
+#include <opencv2/opencv.hpp>
+
 #include "./libs/libbmp.h"
 
 using namespace std;
+using namespace cv;
 
 void byteToBinary(unsigned char byte, char* binary);
 

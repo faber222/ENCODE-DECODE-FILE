@@ -1,5 +1,81 @@
 #include "function.h"
 
+//
+/**
+* Generates a sequence of PNGs from a specified video path
+*
+* @param videoPath the path of the video
+*/
+void generatePNGSequence(string videoPath) {
+
+    VideoCapture video(videoPath);
+    if (!video.isOpened())
+    {
+        cerr << "Error opening video file: " << videoPath << endl;
+        return;
+    }
+
+    int frameCount = static_cast< int >(video.get(CAP_PROP_FRAME_COUNT));
+    int frameNumber = 0;
+
+    // Create the output directory if it doesn't exist
+    filesystem::create_directory(outputDirectory);
+
+    while (frameNumber < frameCount)
+    {
+        Mat frame;
+        if (!video.read(frame))
+        {
+            cerr << "Error reading frame " << frameNumber << " from video." << endl;
+            break;
+        }
+
+        string outputName = outputDirectory + to_string(frameNumber) + ".png";
+        if (!imwrite(outputName, frame))
+        {
+            cerr << "Error saving frame " << frameNumber << " as PNG." << endl;
+        }
+
+        frameNumber++;
+    }
+
+    video.release();
+
+    cout << "PNG sequence generated successfully. Total frames: " << frameNumber << endl;
+    numPNG = frameNumber;
+}
+// 
+
+//
+/**
+* Reads from the directory of generated PNGs from functions above and stitches
+* them together in a video of speficied format, frame rate, etc.
+*/
+void generateVideo() {
+    cv::VideoWriter video(outputVideo, cv::VideoWriter::fourcc('m', 'p', '4', 'v'), 30, cv::Size(width, height));
+
+    if (!video.isOpened()) {
+        cerr << "Failed to create video file: " << outputVideo << endl;
+        return;
+    }
+
+    cv::Mat frame;
+    for (int i = 0; i < numPNG; i++) {
+        string imagePath = directory + to_string(i) + ".png";
+        frame = cv::imread(imagePath);
+
+        if (frame.empty())
+            break;
+
+        for (int j = 0; j < framesPerImage; j++)
+            video.write(frame);
+    }
+
+    video.release();
+    cout << "Video created successfully: " << outputVideo << endl;
+}
+// 
+
 // Converte um byte em sua representação binária
 void byteToBinary(unsigned char byte, char* binary) {
     int i;
