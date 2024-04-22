@@ -7,7 +7,7 @@
 #define N 9
 
 #include <stdio.h>
-#include "../libs/libbmp.h"
+#include "./libs/libbmp.h"
 
 void byteToBinary(unsigned char byte, char* binary);
 
