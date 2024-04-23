@@ -7,11 +7,11 @@
 #include <iostream>
 #include <cctype>
 #include <fstream>
-#include <opencv4/opencv2/videoio.hpp>
 #include <opencv2/opencv.hpp>
-#include <opencv4/opencv2/core.hpp>
 #include <filesystem>
+#include <cstdio>
 #include "./libs/libbmp.h"
+
 
 #define X 512 // largura da imagem
 #define Y 512 // altura da imagem
@@ -21,6 +21,15 @@
 
 using namespace std;
 using namespace cv;
+
+const string outputVideo = "./encodedFiles/output.mp4";
+const string directory = "encodedFiles/";
+const string outputDirectory = "encodedFiles/";
+const int framesPerImage = 1;
+
+void generateBMPSequence(string videoPath);
+
+void generateVideo();
 
 void byteToBinary(unsigned char byte, char* binary);
 

@@ -1,80 +1,83 @@
 #include "function.h"
 
+int numPNG = 0;
+
 //
 /**
 * Generates a sequence of PNGs from a specified video path
 *
 * @param videoPath the path of the video
 */
-// void generatePNGSequence(string videoPath) {
+void generateBMPSequence(string videoPath) {
 
-//     VideoCapture video(videoPath);
-//     if (!video.isOpened())
-//     {
-//         cerr << "Error opening video file: " << videoPath << endl;
-//         return;
-//     }
+    VideoCapture video(videoPath);
+    if (!video.isOpened())
+    {
+        cerr << "Error opening video file: " << videoPath << endl;
+        return;
+    }
 
-//     int frameCount = static_cast< int >(video.get(CAP_PROP_FRAME_COUNT));
-//     int frameNumber = 0;
+    int frameCount = static_cast< int >(video.get(CAP_PROP_FRAME_COUNT));
+    int frameNumber = 0;
 
-//     // Create the output directory if it doesn't exist
-//     filesystem::create_directory(outputDirectory);
+    // Create the output directory if it doesn't exist
+    filesystem::create_directory(outputDirectory);
+    cout << frameCount;
 
-//     while (frameNumber < frameCount)
-//     {
-//         Mat frame;
-//         if (!video.read(frame))
-//         {
-//             cerr << "Error reading frame " << frameNumber << " from video." << endl;
-//             break;
-//         }
+    while (frameNumber < frameCount)
+    {
+        Mat frame;
+        if (!video.read(frame)){
+            cerr << "Error reading frame " << frameNumber << " from video." << endl;
+            break;
+        }
 
-//         string outputName = outputDirectory + to_string(frameNumber) + ".png";
-//         if (!imwrite(outputName, frame))
-//         {
-//             cerr << "Error saving frame " << frameNumber << " as PNG." << endl;
-//         }
+        string outputName = outputDirectory + "imagem" + to_string(frameNumber + 1) + ".bmp";
+        if (!imwrite(outputName, frame))
+        {
+            cerr << "Error saving frame " << frameNumber << " as bmp." << endl;
+        }
 
-//         frameNumber++;
-//     }
+        frameNumber++;
+    }
 
-//     video.release();
+    video.release();
 
-//     cout << "PNG sequence generated successfully. Total frames: " << frameNumber << endl;
-//     numPNG = frameNumber;
-// }
-// 
+    cout << "BMP sequence generated successfully. Total frames: " << frameNumber << endl;
+    numPNG = frameNumber;
+}
 
-//
+
 /**
 * Reads from the directory of generated PNGs from functions above and stitches
 * them together in a video of speficied format, frame rate, etc.
 */
-// void generateVideo() {
-//     cv::VideoWriter video(outputVideo, cv::VideoWriter::fourcc('m', 'p', '4', 'v'), 30, cv::Size(width, height));
+void generateVideo() {
+    VideoWriter video(outputVideo, VideoWriter::fourcc('m', 'p', '4', 'v'), 30, Size(X, Y));
 
-//     if (!video.isOpened()) {
-//         cerr << "Failed to create video file: " << outputVideo << endl;
-//         return;
-//     }
+    if (!video.isOpened()) {
+        cerr << "Failed to create video file: " << outputVideo << endl;
+        return;
+    }
 
-//     cv::Mat frame;
-//     for (int i = 0; i < numPNG; i++) {
-//         string imagePath = directory + to_string(i) + ".png";
-//         frame = cv::imread(imagePath);
+    Mat frame;
+    for (int i = 1; i <= numPNG; i++) {
+        string imagePath = directory + "imagem" + to_string(i) + ".bmp";
+        frame = imread(imagePath);
+        // const char* caminho = imagePath.c_str();
+        // int resultado = remove(caminho);
 
-//         if (frame.empty())
-//             break;
+        if (frame.empty())
+            break;
 
-//         for (int j = 0; j < framesPerImage; j++)
-//             video.write(frame);
-//     }
+        for (int j = 0; j < framesPerImage; j++)
+            video.write(frame);
+    }
 
-//     video.release();
-//     cout << "Video created successfully: " << outputVideo << endl;
-// }
-// 
+    video.release();
+    cout << "Video created successfully: " << outputVideo << endl;
+}
+
 
 // Converte um byte em sua representação binária
 void byteToBinary(unsigned char byte, char* binary) {
@@ -170,6 +173,7 @@ void wread(BmpImg& img, string inputPath) {
                 if (y == Y - 2) {
                     path = "./encodedFiles/imagem" + std::to_string(k) + ".bmp";
                     img.write(path);
+                    numPNG++;
                     y = x = 0;
                     k++;
                 }
@@ -187,6 +191,7 @@ void wread(BmpImg& img, string inputPath) {
         }
         path = "./encodedFiles/imagem" + std::to_string(k) + ".bmp";
         img.write(path);
+        numPNG++;
         file.close();
     } else {
         cerr << "ERRO: arquivo não foi aberto ou não existe" << endl;

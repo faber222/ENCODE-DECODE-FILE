@@ -25,9 +25,11 @@ int main(int argc, char* argv[]) {
 			cout << "Você escolheu a opção " + to_string(UM) << endl << endl;
 			wread(img, openFile(UM));
 			cout << "Dados codificados com sucesso!" << endl;
+			generateVideo();
 			break;
 		case DOIS:
 			cout << "Você escolheu a opção " + to_string(DOIS) << endl << endl;
+			generateBMPSequence(outputVideo);
 			rread(img, openFile(DOIS)); // Recupera os dados da imagem BMP
 			cout << "Dados decodificados com sucesso!" << endl;
 			break;
