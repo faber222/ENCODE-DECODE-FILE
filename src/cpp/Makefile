@@ -1,6 +1,6 @@
 CC = g++
 OBJECTS = ./libs/libbmp.cpp main.cpp function.cpp function.h 
-LIBS =
+LIBS = -I/usr/local/include/opencv4
 CFLAGS = -Wall -Wextra -O2 
 BINDIR = output
 NAME = main
