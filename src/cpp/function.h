@@ -14,6 +14,7 @@
 #include <cctype>
 #include <fstream>
 #include <opencv2/opencv.hpp>
+#include <filesystem>
 
 #include "./libs/libbmp.h"
 
