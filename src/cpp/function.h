@@ -15,6 +15,13 @@
 
 #define X 512 // largura da imagem
 #define Y 512 // altura da imagem
+#define R1 255
+#define G1 255
+#define B1 255
+
+#define R0 0
+#define G0 0
+#define B0 0
 #define N 9 // tamanho do byte
 #define UM 1 // valor usado no switch case para codificacao
 #define DOIS 2 // valor usado no switch case para decodificacao
