@@ -29,10 +29,15 @@
 using namespace std;
 using namespace cv;
 
-const string outputVideo = "./encodedFiles/output.mp4";
-const string directory = "encodedFiles/";
-const string outputDirectory = "encodedFiles/";
-const int framesPerImage = 1;
+const string outputVideo = "./encodedVideo/";
+const string videoFileExtension = "generatedVideo.avi";
+const string generatedJpegOutputDirectory = "./recoveredFiles/";
+const string extension = ".jpeg";
+const string encodedPath = "./encodedFiles/";
+const string decodedPath = "./decodedFiles/";
+const string imageFileName = "imagem";
+const int framesPerImage = 10;
+
 
 void generateBMPSequence(string videoPath);
 

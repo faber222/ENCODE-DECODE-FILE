@@ -1,5 +1,12 @@
-cmake_minimum_required(VERSION 2.8)
-project(lerImagem)
-find_package( OpenCV REQUIRED )
-add_executable( lerImagem teste.cpp )
-target_link_libraries( lerImagem ${OpenCV_LIBS} )
+cmake_minimum_required(VERSION 3.15)
+project(teste)
+
+# Encontre a biblioteca OpenCV
+find_package(OpenCV REQUIRED)
+
+include_directories(${OpenCV_INCLUDE_DIRS})
+# Adicione todos os arquivos fonte ao executável
+add_executable(teste main.cpp)
+
+# Vincule a biblioteca OpenCV ao executável
+target_link_libraries(teste ${OpenCV_LIBS})
