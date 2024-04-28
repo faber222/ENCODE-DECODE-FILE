@@ -32,11 +32,11 @@ using namespace cv;
 const string outputVideo = "./encodedVideo/";
 const string videoFileExtension = "generatedVideo.avi";
 const string generatedJpegOutputDirectory = "./recoveredFiles/";
-const string extension = ".jpeg";
+const string extension = ".bmp";
 const string encodedPath = "./encodedFiles/";
 const string decodedPath = "./decodedFiles/";
 const string imageFileName = "imagem";
-const int framesPerImage = 10;
+const int framesPerImage = 1;
 
 
 void generateBMPSequence(string videoPath);

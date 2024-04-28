@@ -16,26 +16,26 @@ void generateBMPSequence(string  videoPath) {
     // Create the output directory if it doesn't exist
     filesystem::create_directory(generatedJpegOutputDirectory);
     cout << frameCount;
-    int x = 0;
+//    int x = 0;
     int y = 1;
     while (frameNumber < frameCount) {
-    	if(x >= framesPerImage){
-    	    x = 0;
-    	}
-    	if(x == framesPerImage/2){
-		Mat frame;
-		if (!video.read(frame)) {
-		    cerr << "Error reading frame " << frameNumber << " from video." << endl;
-		    break;
-		}
+//    	if(x >= framesPerImage){
+//    	    x = 0;
+//    	}
+//    	if(x == framesPerImage/2){
+	Mat frame;
+	if (!video.read(frame)) {
+	    cerr << "Error reading frame " << frameNumber << " from video." << endl;
+	    break;
+	}
 
-		string outputName = generatedJpegOutputDirectory + imageFileName + to_string(y) + extension + "";
-		if (!imwrite(outputName, frame)) {
-		    cerr << "Error saving frame " << frameNumber << " as " + extension + "." << endl;
-		}
+	string outputName = generatedJpegOutputDirectory + imageFileName + to_string(y) + extension + "";
+	if (!imwrite(outputName, frame)) {
+	    cerr << "Error saving frame " << frameNumber << " as " + extension + "." << endl;
+	}
 	y++;
-        }
-        x++;
+//        }
+//        x++;
         frameNumber++;
     }
 
@@ -65,8 +65,8 @@ void generateVideo() {
         string imagePath = encodedPath + imageFileName + to_string(i) + extension + "";
         frame = imread(imagePath);
         // descomente para apagar as imagens geradas
-	const char* caminho = imagePath.c_str();
-	int resultado = remove(caminho);
+//	const char* caminho = imagePath.c_str();
+//	int resultado = remove(caminho);
 
         if (frame.empty())
             break;
@@ -117,13 +117,13 @@ void rread(BmpImg& img, string outputPath) {
 
     ofstream outFile(outputPath, ios::binary | ios::app);
     while (true) {
-        fileName = "./recoveredFiles/imagem" + to_string(k) + extension;
-	cout << "./recoveredFiles/imagem" + to_string(k) + extension << endl;
+//        fileName = "./recoveredFiles/" + imageFileName + to_string(k) + extension;
+	fileName = encodedPath + imageFileName + to_string(k) + extension + "";
         // Tenta abrir a próxima imagem gerada
         if (img.read(fileName) != BMP_OK) {
+	    cerr << "erro ao ler imagem "+ to_string(k) << endl;
             break;  // Sai do loop se não houver mais imagens
         }
-	cout << "teste" << endl;
         // Exemplo de acesso aos pixels da imagem
         for (size_t y = 0; y < Y; y++) {
             for (size_t x = 0; x < X; x++) {
@@ -131,7 +131,7 @@ void rread(BmpImg& img, string outputPath) {
                 unsigned char g = img.green_at(x, y);
                 unsigned char b = img.blue_at(x, y);
 
-                if (r <= 255 && r >= 128 && g <= 255 && g >= 128 && b <= 255 && b >= 128) {
+                if (r <= R1 && r >= 128 && g <= G1 && g >= 128 && b <= B1 && b >= 128) {
                     bits[j] = '1';
                     j++;
                 } else {
@@ -139,15 +139,15 @@ void rread(BmpImg& img, string outputPath) {
                     j++;
                 }
 
-                // // Se o pixel for preto ou branco, extrai o bit correspondente
-                // if ((r == 0 && g == 0 && b == 0) || (r == 250 && g == 250 && b == 250)) {
-                //     if (r == 0) {
-                //         bits[j] = '0';
-                //     } else {
-                //         bits[j] = '1';
-                //     }
-                //     j++;
-                // }
+                // Se o pixel for preto ou branco, extrai o bit correspondente
+//                 if ((r == R0 && g == G0 && b == B0) || (r == R1 && g == G1 && b == B1)) {
+//                     if (r == 0) {
+//                         bits[j] = '0';
+//                     } else {
+//                         bits[j] = '1';
+//                     }
+//                     j++;
+//                 }
 
                 if (j == 8) {
                     bits[j] = '\0'; // Adiciona um terminador de string
