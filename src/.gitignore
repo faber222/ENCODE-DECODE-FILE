@@ -40,8 +40,8 @@ _deps
 *_REMOTE_*.txt
 
 ### Ignorar qualquer arquivo novo ###
-encodedFiles/
-decodedFiles/
+!encodedFiles/bin.txt
+!decodedFiles/bin.txt
 
 ### Linux ###
 *~
