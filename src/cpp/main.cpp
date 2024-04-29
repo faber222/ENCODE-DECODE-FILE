@@ -1,5 +1,6 @@
 #include "function.h"
 
+
 int main(int argc, char* argv[]) {
 	BmpImg img(X, Y);
 	img.init(X, Y); // Inicializa uma imagem BMP com tamanho 512x512
@@ -29,7 +30,7 @@ int main(int argc, char* argv[]) {
 			break;
 		case DOIS:
 			cout << "Você escolheu a opção " + to_string(DOIS) << endl << endl;
-			generateBMPSequence(outputVideo);
+			generateBMPSequence(outputVideo + videoFileExtension + "");
 			rread(img, openFile(DOIS)); // Recupera os dados da imagem BMP
 			cout << "Dados decodificados com sucesso!" << endl;
 			break;

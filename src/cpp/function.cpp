@@ -2,8 +2,14 @@
 
 int numPNG = 0;
 
-void generateBMPSequence(string videoPath) {
+bool isGrayScale(char r, char g, char b) {
+    // Verifica se os valores RGB estão próximos uns dos outros
+    // int maxDiff = 0; // Defina a tolerância de diferença de cor
+    // return (abs(r - g) <= maxDiff && abs(g - b) <= maxDiff && abs(b - r) <= maxDiff);
+    return (r == g && g == b && b == r);
+}
 
+void generateBMPSequence(string videoPath) {
     VideoCapture video(videoPath);
     if (!video.isOpened()) {
         cerr << "Error opening video file: " << videoPath << endl;
@@ -14,26 +20,36 @@ void generateBMPSequence(string videoPath) {
     int frameNumber = 0;
 
     // Create the output directory if it doesn't exist
-    filesystem::create_directory(outputDirectory);
-    cout << frameCount;
-
+    filesystem::create_directory(generatedOutputDir);
+    // int x = 1;
+    int y = 1;
+    // int z = 0;
     while (frameNumber < frameCount) {
+        // if(x > framesPerImage){
+        //     x = 1;
+        //     cout << "frame: " + to_string(z) + " e frameNumer: " + to_string(frameNumber) << endl;
+        //     z++;
+        // }
+        // if(x == 2){
         Mat frame;
         if (!video.read(frame)) {
             cerr << "Error reading frame " << frameNumber << " from video." << endl;
             break;
         }
 
-        string outputName = outputDirectory + "imagem" + to_string(frameNumber + 1) + ".png";
+        string outputName = generatedOutputDir + imageFileName + to_string(y) + extension + "";
         if (!imwrite(outputName, frame)) {
-            cerr << "Error saving frame " << frameNumber << " as bmp." << endl;
+            cerr << "Error saving frame " << frameNumber << " as " + extension + "." << endl;
         }
+        y++;
+        // }
+        // x++;
         frameNumber++;
     }
 
     video.release();
 
-    cout << "BMP sequence generated successfully. Total frames: " << frameNumber << endl;
+    cout << extension + " sequence generated successfully. Total frames: " << frameNumber << endl;
     numPNG = frameNumber;
 }
 
@@ -43,16 +59,18 @@ void generateBMPSequence(string videoPath) {
 * them together in a video of speficied format, frame rate, etc.
 */
 void generateVideo() {
-    VideoWriter video(outputVideo, VideoWriter::fourcc('m', 'p', '4', 'v'), 1, Size(X, Y));
+    filesystem::create_directory(outputVideo);
+    string outVideo = outputVideo + videoFileExtension + "";
+    VideoWriter video(outVideo, VideoWriter::fourcc('M', 'J', 'P', 'G'), 1, Size(X, Y));
 
     if (!video.isOpened()) {
-        cerr << "Failed to create video file: " << outputVideo << endl;
+        cerr << "Failed to create video file: " << outVideo << endl;
         return;
     }
 
     Mat frame;
     for (int i = 1; i <= numPNG; i++) {
-        string imagePath = directory + "imagem" + to_string(i) + ".png";
+        string imagePath = encodedPath + imageFileName + to_string(i) + extension + "";
         frame = imread(imagePath);
         // descomente para apagar as imagens geradas
         // const char* caminho = imagePath.c_str();
@@ -66,7 +84,7 @@ void generateVideo() {
     }
 
     video.release();
-    cout << "Video created successfully: " << outputVideo << endl;
+    cout << "Video created successfully: " << outVideo << endl;
 }
 
 
@@ -107,9 +125,12 @@ void rread(BmpImg& img, string outputPath) {
 
     ofstream outFile(outputPath, ios::binary | ios::app);
     while (true) {
-        fileName = "./encodedFiles/imagem" + to_string(k) + ".png";
+        // se descomentar essa e comentar a outra, podemos testar o código na pratica
+        // fileName = generatedOutputDir + imageFileName + to_string(k) + extension + "";
+        fileName = encodedPath + imageFileName + to_string(k) + extension + "";
         // Tenta abrir a próxima imagem gerada
         if (img.read(fileName) != BMP_OK) {
+            cerr << "erro ao ler imagem " + to_string(k) << endl;
             break;  // Sai do loop se não houver mais imagens
         }
         // Exemplo de acesso aos pixels da imagem
@@ -119,16 +140,17 @@ void rread(BmpImg& img, string outputPath) {
                 unsigned char g = img.green_at(x, y);
                 unsigned char b = img.blue_at(x, y);
 
-                if (r <= 255 && r >= 100 && g <= 255 && g >= 100 && b <= 255 && b >= 100) {
-                    bits[j] = '1';
-                    j++;
-                } else {
-                    bits[j] = '0';
-                    j++;
+                // Se o pixel for preto ou branco, extrai o bit correspondente
+                if (isGrayScale(r, g, b)) {
+                    if (r < 128) {
+                        bits[j] = '0';
+                        j++;
+                    } else {
+                        bits[j] = '1';
+                        j++;
+                    }
                 }
-
-                // // Se o pixel for preto ou branco, extrai o bit correspondente
-                // if ((r == 0 && g == 0 && b == 0) || (r == 250 && g == 250 && b == 250)) {
+                // if ((r == R0 && g == G0 && b == B0) || (r == R1 && g == G1 && b == B1)) {
                 //     if (r == 0) {
                 //         bits[j] = '0';
                 //     } else {
@@ -157,7 +179,6 @@ void wread(BmpImg& img, string inputPath) {
     int y = 0, x = 0, k = 1;
     char byte;
     char binary[8]; // Tamanho fixo para armazenar a representação binária de um byte
-
     file.open(inputPath, ios::in | ios::binary);
     if (file.is_open()) {
         // Lê o arquivo byte a byte e converte cada byte em sua representação binária
@@ -166,14 +187,14 @@ void wread(BmpImg& img, string inputPath) {
             for (size_t i = 0; i < 8; i++) {
                 // Limita a quantidade máxima de pixels a 510x510
                 if (y == Y - 2) {
-                    path = "./encodedFiles/imagem" + to_string(k) + ".png";
+                    path = encodedPath + imageFileName + to_string(k) + extension + "";
                     img.write(path);
                     numPNG++;
                     y = x = 0;
                     k++;
                 }
                 if (x == X - 2) {
-                    if (y < Y -2){
+                    if (y < Y - 2) {
                         y++;
                     }
                     x = 0;
@@ -187,7 +208,7 @@ void wread(BmpImg& img, string inputPath) {
                 x++;
             }
         }
-        path = "./encodedFiles/imagem" + to_string(k) + ".png";
+        path = encodedPath + imageFileName + to_string(k) + extension + "";
         img.write(path);
         numPNG++;
         file.close();
@@ -212,7 +233,7 @@ string openFile(int i) {
     cout << "Digite o caminho do arquivo com a extensao: ";
     cin >> keyboard;
     if (i == DOIS) {
-        keyboard = "./decodedFiles/" + keyboard;
+        keyboard = decodedPath + keyboard + "";
     }
     return keyboard;
 }
