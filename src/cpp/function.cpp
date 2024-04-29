@@ -2,8 +2,14 @@
 
 int numPNG = 0;
 
-void generateBMPSequence(string  videoPath) {
+bool isGrayScale(char r, char g, char b) {
+    // Verifica se os valores RGB estão próximos uns dos outros
+    // int maxDiff = 0; // Defina a tolerância de diferença de cor
+    // return (abs(r - g) <= maxDiff && abs(g - b) <= maxDiff && abs(b - r) <= maxDiff);
+    return (r == g && g == b && b == r);
+}
 
+void generateBMPSequence(string videoPath) {
     VideoCapture video(videoPath);
     if (!video.isOpened()) {
         cerr << "Error opening video file: " << videoPath << endl;
@@ -14,28 +20,30 @@ void generateBMPSequence(string  videoPath) {
     int frameNumber = 0;
 
     // Create the output directory if it doesn't exist
-    filesystem::create_directory(generatedJpegOutputDirectory);
-    cout << frameCount;
-//    int x = 0;
+    filesystem::create_directory(generatedOutputDir);
+    // int x = 1;
     int y = 1;
+    // int z = 0;
     while (frameNumber < frameCount) {
-//    	if(x >= framesPerImage){
-//    	    x = 0;
-//    	}
-//    	if(x == framesPerImage/2){
-	Mat frame;
-	if (!video.read(frame)) {
-	    cerr << "Error reading frame " << frameNumber << " from video." << endl;
-	    break;
-	}
+        // if(x > framesPerImage){
+        //     x = 1;
+        //     cout << "frame: " + to_string(z) + " e frameNumer: " + to_string(frameNumber) << endl;
+        //     z++;
+        // }
+        // if(x == 2){
+        Mat frame;
+        if (!video.read(frame)) {
+            cerr << "Error reading frame " << frameNumber << " from video." << endl;
+            break;
+        }
 
-	string outputName = generatedJpegOutputDirectory + imageFileName + to_string(y) + extension + "";
-	if (!imwrite(outputName, frame)) {
-	    cerr << "Error saving frame " << frameNumber << " as " + extension + "." << endl;
-	}
-	y++;
-//        }
-//        x++;
+        string outputName = generatedOutputDir + imageFileName + to_string(y) + extension + "";
+        if (!imwrite(outputName, frame)) {
+            cerr << "Error saving frame " << frameNumber << " as " + extension + "." << endl;
+        }
+        y++;
+        // }
+        // x++;
         frameNumber++;
     }
 
@@ -53,7 +61,7 @@ void generateBMPSequence(string  videoPath) {
 void generateVideo() {
     filesystem::create_directory(outputVideo);
     string outVideo = outputVideo + videoFileExtension + "";
-    VideoWriter video(outVideo, VideoWriter::fourcc('M', 'J', 'P', 'G'), 10, Size(X, Y));
+    VideoWriter video(outVideo, VideoWriter::fourcc('M', 'J', 'P', 'G'), 1, Size(X, Y));
 
     if (!video.isOpened()) {
         cerr << "Failed to create video file: " << outVideo << endl;
@@ -65,8 +73,8 @@ void generateVideo() {
         string imagePath = encodedPath + imageFileName + to_string(i) + extension + "";
         frame = imread(imagePath);
         // descomente para apagar as imagens geradas
-//	const char* caminho = imagePath.c_str();
-//	int resultado = remove(caminho);
+        // const char* caminho = imagePath.c_str();
+        // int resultado = remove(caminho);
 
         if (frame.empty())
             break;
@@ -117,11 +125,12 @@ void rread(BmpImg& img, string outputPath) {
 
     ofstream outFile(outputPath, ios::binary | ios::app);
     while (true) {
-//        fileName = "./recoveredFiles/" + imageFileName + to_string(k) + extension;
-	fileName = encodedPath + imageFileName + to_string(k) + extension + "";
+        // se descomentar essa e comentar a outra, podemos testar o código na pratica
+        // fileName = generatedOutputDir + imageFileName + to_string(k) + extension + "";
+        fileName = encodedPath + imageFileName + to_string(k) + extension + "";
         // Tenta abrir a próxima imagem gerada
         if (img.read(fileName) != BMP_OK) {
-	    cerr << "erro ao ler imagem "+ to_string(k) << endl;
+            cerr << "erro ao ler imagem " + to_string(k) << endl;
             break;  // Sai do loop se não houver mais imagens
         }
         // Exemplo de acesso aos pixels da imagem
@@ -131,23 +140,24 @@ void rread(BmpImg& img, string outputPath) {
                 unsigned char g = img.green_at(x, y);
                 unsigned char b = img.blue_at(x, y);
 
-                if (r <= R1 && r >= 128 && g <= G1 && g >= 128 && b <= B1 && b >= 128) {
-                    bits[j] = '1';
-                    j++;
-                } else {
-                    bits[j] = '0';
-                    j++;
-                }
-
                 // Se o pixel for preto ou branco, extrai o bit correspondente
-//                 if ((r == R0 && g == G0 && b == B0) || (r == R1 && g == G1 && b == B1)) {
-//                     if (r == 0) {
-//                         bits[j] = '0';
-//                     } else {
-//                         bits[j] = '1';
-//                     }
-//                     j++;
-//                 }
+                if (isGrayScale(r, g, b)) {
+                    if (r < 128) {
+                        bits[j] = '0';
+                        j++;
+                    } else {
+                        bits[j] = '1';
+                        j++;
+                    }
+                }
+                // if ((r == R0 && g == G0 && b == B0) || (r == R1 && g == G1 && b == B1)) {
+                //     if (r == 0) {
+                //         bits[j] = '0';
+                //     } else {
+                //         bits[j] = '1';
+                //     }
+                //     j++;
+                // }
 
                 if (j == 8) {
                     bits[j] = '\0'; // Adiciona um terminador de string
@@ -169,7 +179,6 @@ void wread(BmpImg& img, string inputPath) {
     int y = 0, x = 0, k = 1;
     char byte;
     char binary[8]; // Tamanho fixo para armazenar a representação binária de um byte
-
     file.open(inputPath, ios::in | ios::binary);
     if (file.is_open()) {
         // Lê o arquivo byte a byte e converte cada byte em sua representação binária
@@ -185,7 +194,7 @@ void wread(BmpImg& img, string inputPath) {
                     k++;
                 }
                 if (x == X - 2) {
-                    if (y < Y -2){
+                    if (y < Y - 2) {
                         y++;
                     }
                     x = 0;
