@@ -42,6 +42,10 @@ bool isGrayScale(char r, char g, char b);
 
 void generateBMPSequence(string videoPath);
 
+void generateBMPTeste(string videoPath);
+
+void generateVideoTeste();
+
 void generateVideo();
 
 void byteToBinary(unsigned char byte, char* binary);
