@@ -8,13 +8,14 @@
 #include <cctype>
 #include <fstream>
 #include <opencv2/opencv.hpp>
+// #include <opencv4/opencv2/opencv.hpp>
 #include <filesystem>
 #include <cstdio>
 #include "./libs/libbmp.h"
 
 
-#define X 512 // largura da imagem
-#define Y 512 // altura da imagem
+#define X 1920 // largura da imagem
+#define Y 1080 // altura da imagem
 #define R1 255
 #define G1 255
 #define B1 255
@@ -42,9 +43,11 @@ bool isGrayScale(char r, char g, char b);
 
 void generateBMPSequence(string videoPath);
 
-void generateBMPTeste(string videoPath);
+vector<Mat> generateBMPSequenceInMemory(string videoPath);
 
-void generateVideoTeste();
+// void generateBMPTeste(string videoPath);
+
+// void generateVideoTeste();
 
 void generateVideo();
 
@@ -53,6 +56,8 @@ void byteToBinary(unsigned char byte, char* binary);
 unsigned char bitsToByte(char bits[]);
 
 void rread(BmpImg& img, string outputPath);
+
+// void rread(Mat& img, const Mat& inputFrame, string outputPath);
 
 void wread(BmpImg& img, string inputPath);
 

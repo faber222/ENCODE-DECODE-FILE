@@ -41,39 +41,69 @@ void generateBMPSequence(string videoPath) {
     numPNG = frameNumber;
 }
 
-void generateBMPTeste(string videoPath){
-    // Criar o diretório de saída se ele não existir
-//    filesystem::create_directory(outputDir);
+vector<Mat> generateBMPSequenceInMemory(string videoPath) {
+    VideoCapture video(videoPath);
+    vector<Mat> frames;
 
-    // Comando FFmpeg para extrair frames do vídeo
-    string ffmpegCommand = "ffmpeg -i " + videoPath + " -r 1 -s 512x512 -f image2 " + generatedOutputDir + imageFileName + "%d" + extension;
-
-    // Executar o comando FFmpeg
-    int result = system(ffmpegCommand.c_str());
-
-    // Verificar se a execução foi bem-sucedida
-    if (result == 0) {
-        cout << "Sequence generated successfully." << endl;
-    } else {
-        cerr << "Error generating sequence." << endl;
+    if (!video.isOpened()) {
+        cerr << "Error opening video file: " << videoPath << endl;
+        return frames;
     }
+
+    int frameCount = static_cast< int >(video.get(CAP_PROP_FRAME_COUNT));
+    int frameNumber = 0;
+
+    while (frameNumber < frameCount) {
+        Mat frame;
+        if (!video.read(frame)) {
+            cerr << "Error reading frame " << frameNumber << " from video." << endl;
+            break;
+        }
+
+        frames.push_back(frame.clone()); // Armazena o frame na memória
+        frameNumber++;
+    }
+
+    video.release();
+
+    cout << "Frames loaded successfully. Total frames: " << frameNumber << endl;
+    return frames;
 }
 
-void generateVideoTeste(){
-    // Comando FFmpeg para criar o vídeo a partir das imagens
-    string outputVideoPath = outputVideo + videoFileExtension + "";
-    string ffmpegCommand = "ffmpeg -framerate 1 -i " + encodedPath + imageFileName + "%d" + extension + " -c:v libx264 -s 512x512 " + outputVideoPath;
 
-    // Executar o comando FFmpeg
-    int result = system(ffmpegCommand.c_str());
+// void generateBMPTeste(string videoPath) {
+//     // Criar o diretório de saída se ele não existir
+// //    filesystem::create_directory(outputDir);
 
-    // Verificar se a execução foi bem-sucedida
-    if (result == 0) {
-        cout << "Video generated successfully." << endl;
-    } else {
-        cerr << "Error generating video." << endl;
-    }
-}
+//     // Comando FFmpeg para extrair frames do vídeo
+//     string ffmpegCommand = "ffmpeg -i " + videoPath + " -r 1 -s 512x512 -f image2 " + generatedOutputDir + imageFileName + "%d" + extension;
+
+//     // Executar o comando FFmpeg
+//     int result = system(ffmpegCommand.c_str());
+
+//     // Verificar se a execução foi bem-sucedida
+//     if (result == 0) {
+//         cout << "Sequence generated successfully." << endl;
+//     } else {
+//         cerr << "Error generating sequence." << endl;
+//     }
+// }
+
+// void generateVideoTeste() {
+//     // Comando FFmpeg para criar o vídeo a partir das imagens
+//     string outputVideoPath = outputVideo + videoFileExtension + "";
+//     string ffmpegCommand = "ffmpeg -framerate 1 -i " + encodedPath + imageFileName + "%d" + extension + " -c:v libx264 -s 512x512 " + outputVideoPath;
+
+//     // Executar o comando FFmpeg
+//     int result = system(ffmpegCommand.c_str());
+
+//     // Verificar se a execução foi bem-sucedida
+//     if (result == 0) {
+//         cout << "Video generated successfully." << endl;
+//     } else {
+//         cerr << "Error generating video." << endl;
+//     }
+// }
 
 /**
 * Reads from the directory of generated PNGs from functions above and stitches
@@ -82,7 +112,7 @@ void generateVideoTeste(){
 void generateVideo() {
     filesystem::create_directory(outputVideo);
     string outVideo = outputVideo + videoFileExtension + "";
-    VideoWriter video(outVideo, VideoWriter::fourcc('M', 'J', 'P', 'G'), 1, Size(X, Y));
+    VideoWriter video(outVideo, VideoWriter::fourcc('H', 'F', 'Y', 'U'), 30, Size(X, Y));
 
     if (!video.isOpened()) {
         cerr << "Failed to create video file: " << outVideo << endl;
@@ -94,8 +124,8 @@ void generateVideo() {
         string imagePath = encodedPath + imageFileName + to_string(i) + extension + "";
         frame = imread(imagePath);
         // descomente para apagar as imagens geradas
-        // const char* caminho = imagePath.c_str();
-        // int resultado = remove(caminho);
+        const char* caminho = imagePath.c_str();
+        int resultado = remove(caminho);
 
         if (frame.empty())
             break;
@@ -146,11 +176,14 @@ void rread(BmpImg& img, string outputPath) {
     string fileName;
 
     ofstream outFile(outputPath, ios::binary | ios::app);
-//    ofstream outBinFile("recBin.txt", ios::app);
+    //    ofstream outBinFile("recBin.txt", ios::app);
     while (true) {
         // se descomentar essa e comentar a outra, podemos testar o código na pratica
         fileName = generatedOutputDir + imageFileName + to_string(k) + extension + "";
-//        fileName = encodedPath + imageFileName + to_string(k) + extension + "";
+
+        // descomente para ler direto das imagens
+        // fileName = encodedPath + imageFileName + to_string(k) + extension + "";
+
         // Tenta abrir a próxima imagem gerada
         if (img.read(fileName) != BMP_OK) {
             cerr << "erro ao ler imagem " + to_string(k) << endl;
@@ -163,38 +196,40 @@ void rread(BmpImg& img, string outputPath) {
                 unsigned char g = img.green_at(x, y);
                 unsigned char b = img.blue_at(x, y);
 
-                // Se o pixel for preto ou branco, extrai o bit correspondente
-                if (isGrayScale(r, g, b)) {
-                    if (r <= 128) {
-                        bits[j] = '0';
-                        j++;
-                    } else {
-                        bits[j] = '1';
-                        j++;
-                    }
-                }
-                // if ((r == R0 && g == G0 && b == B0) || (r == R1 && g == G1 && b == B1)) {
-                //     if (r == 0) {
+                // // Se o pixel for preto ou branco, extrai o bit correspondente
+                // if (isGrayScale(r, g, b)) {
+                //     if (r <= 128) {
                 //         bits[j] = '0';
+                //         j++;
                 //     } else {
                 //         bits[j] = '1';
+                //         j++;
                 //     }
-                //     j++;
                 // }
+
+                // Uso sem a necessidade de validação da escala cinza
+                if ((r == R0 && g == G0 && b == B0) || (r == R1 && g == G1 && b == B1)) {
+                    if (r == 0) {
+                        bits[j] = '0';
+                    } else {
+                        bits[j] = '1';
+                    }
+                    j++;
+                }
 
                 if (j == 8) {
                     bits[j] = '\0'; // Adiciona um terminador de string
                     j = 0;
                     byte = bitsToByte(bits);
                     outFile.write(reinterpret_cast< char* >(&byte), sizeof(char));
-//		    outBinFile << bits << endl;
+                    //		    outBinFile << bits << endl;
                 }
             }
         }
         k++;
     }
     outFile.close();
-//    outBinFile.close();
+    //    outBinFile.close();
 }
 
 // Lê um arquivo byte a byte, converte cada byte em uma sequência de bits e desenha uma imagem com base nesses bits
@@ -205,12 +240,12 @@ void wread(BmpImg& img, string inputPath) {
     char byte;
     char binary[8]; // Tamanho fixo para armazenar a representação binária de um byte
     file.open(inputPath, ios::in | ios::binary);
-//    ofstream outFile("bin.txt", ios::app);
+    //    ofstream outFile("bin.txt", ios::app);
     if (file.is_open()) {
         // Lê o arquivo byte a byte e converte cada byte em sua representação binária
         while (file.read(&byte, sizeof(char))) {
             byteToBinary(byte, binary);
-//	    outFile << binary << endl;
+            //	    outFile << binary << endl;
             for (size_t i = 0; i < 8; i++) {
                 // Limita a quantidade máxima de pixels a 510x510
                 if (y == Y - 2) {
@@ -236,14 +271,14 @@ void wread(BmpImg& img, string inputPath) {
             }
         }
         path = encodedPath + imageFileName + to_string(k) + extension + "";
-//        outFile << binary << endl;
+        //        outFile << binary << endl;
         img.write(path);
         numPNG++;
         file.close();
     } else {
         cerr << "ERRO: arquivo não foi aberto ou não existe" << endl;
     }
-//	outFile.close();
+    //	outFile.close();
 }
 
 // Pinta toda a imagem de vermelho
