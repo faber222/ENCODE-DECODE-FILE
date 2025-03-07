@@ -20,36 +20,35 @@ int main(int argc, char* argv[]) {
 	cin >> keyboard;
 	opcao = stoi(keyboard);
 
-	string saida = openFile(opcao);
-
 	// Verifica a opção escolhida pelo usuário
 	switch (opcao) {
+		// case UM:
+		// 	cout << "Você escolheu a opção " + to_string(UM) << endl << endl;
+		// 	wread(img, openFile(UM));
+		// 	cout << "Dados codificados com sucesso!" << endl;
+		// 	generateVideo();
+		// 	break;
+
+		// case DOIS:
+		// 	cout << "Você escolheu a opção " + to_string(DOIS) << endl << endl;
+		// 	generateBMPSequence(outputVideo + videoFileExtension + "");
+		// 	rread(img, openFile(DOIS)); // Recupera os dados da imagem BMP
+		// 	cout << "Dados decodificados com sucesso!" << endl;
+		// 	break;
 		case UM:
 			cout << "Você escolheu a opção " + to_string(UM) << endl << endl;
-			wread(img, saida);
-			cout << "Dados codificados com sucesso!" << endl;
-			generateVideo();
-
-			//			generateVideoTeste();
+			generateVideo(openFile(UM)); // Cria o vídeo diretamente a partir do arquivo de entrada
 			break;
+
 		case DOIS:
 			cout << "Você escolheu a opção " + to_string(DOIS) << endl << endl;
-			generateBMPSequence(outputVideo + videoFileExtension + "");
-			// generateBMPTeste(outputVideo + videoFileExtension + "");
-			rread(img, saida); // Recupera os dados da imagem BMP
-			cout << "Dados decodificados com sucesso!" << endl;
+			processVideoToFile(outputVideo + videoFileExtension, openFile(DOIS));
+			
 			break;
-			// case DOIS:
-			// 	cout << "Você escolheu a opção " + to_string(DOIS) << endl << endl;
-			// 	for (const auto& frame : generateBMPSequenceInMemory(outputVideo + videoFileExtension + "")) {
-			// 		Mat img;
-			// 		rread(img, frame, saida); // Processa cada frame
-			// 	}
-			// 	cout << "Dados decodificados com sucesso!" << endl;
-			// 	break;
+
 		case 0:
 			cout << "Saindo do programa..." << endl;
-			return 0; // Encerra o programa
+			return 0; 
 		default:
 			cout << "Opção inválida" << endl;
 			break;

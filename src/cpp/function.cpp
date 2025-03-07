@@ -2,10 +2,11 @@
 
 int numPNG = 0;
 
-bool isGrayScale(char r, char g, char b) {
-    // Verifica se os valores RGB estão próximos uns dos outros
-    return (r == g && g == b && b == r);
-}
+// não usado
+// bool isGrayScale(char r, char g, char b) {
+//     // Verifica se os valores RGB estão próximos uns dos outros
+//     return (r == g && g == b && b == r);
+// }
 
 void generateBMPSequence(string videoPath) {
     VideoCapture video(videoPath);
@@ -41,69 +42,87 @@ void generateBMPSequence(string videoPath) {
     numPNG = frameNumber;
 }
 
-vector<Mat> generateBMPSequenceInMemory(string videoPath) {
+// Exemplo de fluxo de execução :
+// 1 - O vídeo é aberto.
+// 2 - Para cada frame :
+//      O frame é lido.
+//      Os pixels são processados para extrair os bits.
+//      Os bits são convertidos em bytes e escritos no arquivo de saída.
+// 3 - Após processar todos os frames, o vídeo e o arquivo de saída são fechados.
+void processVideoToFile(const string& videoPath, const string& outputPath) {
+    // Abre o vídeo
     VideoCapture video(videoPath);
-    vector<Mat> frames;
-
     if (!video.isOpened()) {
-        cerr << "Error opening video file: " << videoPath << endl;
-        return frames;
+        cerr << "Erro ao abrir o vídeo: " << videoPath << endl;
+        return;
     }
 
-    int frameCount = static_cast< int >(video.get(CAP_PROP_FRAME_COUNT));
+    // Abre o arquivo de saída
+    ofstream outFile(outputPath, ios::binary | ios::app);
+    if (!outFile.is_open()) {
+        cerr << "Erro ao abrir o arquivo de saída: " << outputPath << endl;
+        video.release();
+        return;
+    }
+
     int frameNumber = 0;
+    Mat frame;
+    char bits[N];
+    int j = 0;
+    unsigned char byte;
 
-    while (frameNumber < frameCount) {
-        Mat frame;
-        if (!video.read(frame)) {
-            cerr << "Error reading frame " << frameNumber << " from video." << endl;
-            break;
-        }
-
-        frames.push_back(frame.clone()); // Armazena o frame na memória
+    // Processa cada frame do vídeo
+    while (video.read(frame)) {
         frameNumber++;
+
+        // Processa os pixels do frame
+        for (size_t y = 0; y < frame.rows; y++) {
+            for (size_t x = 0; x < frame.cols; x++) {
+                Vec3b pixel = frame.at<Vec3b>(y, x);
+                unsigned char r = pixel[2]; // Canal vermelho
+                unsigned char g = pixel[1]; // Canal verde
+                unsigned char b = pixel[0]; // Canal azul
+
+                // Verifica se o pixel é preto ou branco
+                if ((r == R0 && g == G0 && b == B0) || (r == R1 && g == G1 && b == B1)) {
+                    if (r == 0) {
+                        bits[j] = '0';
+                    } else {
+                        bits[j] = '1';
+                    }
+                    j++;
+                }
+
+                // Quando temos 8 bits, converte para um byte e escreve no arquivo
+                if (j == 8) {
+                    bits[j] = '\0'; // Adiciona um terminador de string
+                    j = 0;
+                    byte = bitsToByte(bits);
+                    outFile.write(reinterpret_cast< char* >(&byte), sizeof(char));
+                }
+            }
+        }
     }
 
+    // Verifica se há bits restantes não processados
+    if (j > 0) {
+        while (j < 8) {
+            bits[j] = '0';
+            j++;
+        }
+        bits[j] = '\0';
+        byte = bitsToByte(bits);
+        outFile.write(reinterpret_cast< char* >(&byte), sizeof(char));
+    }
+
+
+    // Fecha o vídeo e o arquivo de saída
     video.release();
+    outFile.close();
 
-    cout << "Frames loaded successfully. Total frames: " << frameNumber << endl;
-    return frames;
+    cout << "Processamento concluído. Total de frames processados: " << frameNumber << endl;
+    cout << "Dados decodificados com sucesso!" << endl;
 }
-
-
-// void generateBMPTeste(string videoPath) {
-//     // Criar o diretório de saída se ele não existir
-// //    filesystem::create_directory(outputDir);
-
-//     // Comando FFmpeg para extrair frames do vídeo
-//     string ffmpegCommand = "ffmpeg -i " + videoPath + " -r 1 -s 512x512 -f image2 " + generatedOutputDir + imageFileName + "%d" + extension;
-
-//     // Executar o comando FFmpeg
-//     int result = system(ffmpegCommand.c_str());
-
-//     // Verificar se a execução foi bem-sucedida
-//     if (result == 0) {
-//         cout << "Sequence generated successfully." << endl;
-//     } else {
-//         cerr << "Error generating sequence." << endl;
-//     }
-// }
-
-// void generateVideoTeste() {
-//     // Comando FFmpeg para criar o vídeo a partir das imagens
-//     string outputVideoPath = outputVideo + videoFileExtension + "";
-//     string ffmpegCommand = "ffmpeg -framerate 1 -i " + encodedPath + imageFileName + "%d" + extension + " -c:v libx264 -s 512x512 " + outputVideoPath;
-
-//     // Executar o comando FFmpeg
-//     int result = system(ffmpegCommand.c_str());
-
-//     // Verificar se a execução foi bem-sucedida
-//     if (result == 0) {
-//         cout << "Video generated successfully." << endl;
-//     } else {
-//         cerr << "Error generating video." << endl;
-//     }
-// }
 
 /**
 * Reads from the directory of generated PNGs from functions above and stitches
@@ -112,7 +131,12 @@ vector<Mat> generateBMPSequenceInMemory(string videoPath) {
 void generateVideo() {
     filesystem::create_directory(outputVideo);
     string outVideo = outputVideo + videoFileExtension + "";
-    VideoWriter video(outVideo, VideoWriter::fourcc('H', 'F', 'Y', 'U'), 30, Size(X, Y));
+
+    // compressão em HuffYUV (FOURCC = "HFYU") → Sem perdas e mais eficiente que FFV1.
+    // VideoWriter video(outVideo, VideoWriter::fourcc('H', 'F', 'Y', 'U'), 30, Size(X, Y));
+
+    // compressão em FFV1 (FOURCC = "FFV1") → Totalmente sem perdas, mas gera arquivos grandes.
+    VideoWriter video(outVideo, VideoWriter::fourcc('F', 'F', 'V', '1'), 30, Size(X, Y));
 
     if (!video.isOpened()) {
         cerr << "Failed to create video file: " << outVideo << endl;
@@ -136,6 +160,71 @@ void generateVideo() {
 
     video.release();
     cout << "Video created successfully: " << outVideo << endl;
+}
+
+// unifica a função wread e generateVideo() e faz tudo em memoria
+void generateVideo(const string& inputPath) {
+    // Cria o diretório de saída se ele não existir
+    filesystem::create_directory(outputVideo);
+    string outVideo = outputVideo + videoFileExtension;
+
+    // Abre o arquivo de entrada para leitura
+    ifstream inFile(inputPath, ios::binary);
+    if (!inFile.is_open()) {
+        cerr << "Erro ao abrir o arquivo de entrada: " << inputPath << endl;
+        return;
+    }
+
+    // Configura o VideoWriter para criar o vídeo
+    VideoWriter video(outVideo, VideoWriter::fourcc('F', 'F', 'V', '1'), 30, Size(X, Y));
+    if (!video.isOpened()) {
+        cerr << "Erro ao criar o arquivo de vídeo: " << outVideo << endl;
+        inFile.close();
+        return;
+    }
+
+    Mat frame(Y, X, CV_8UC3, Scalar(0, 0, 0)); // Cria um frame preto
+    // Mat frame;
+    char byte;
+    char binary[9]; // Array para armazenar a representação binária de um byte
+    int x = 0, y = 0;
+
+    // Lê o arquivo byte a byte e desenha os pixels no frame
+    while (inFile.read(&byte, sizeof(char))) {
+        byteToBinary(byte, binary);
+
+        for (int i = 0; i < 8; i++) {
+            if (x >= X) {
+                x = 0;
+                y++;
+                if (y >= Y) {
+                    // Adiciona o frame ao vídeo e reinicia o frame
+                    video.write(frame);
+                    frame.setTo(Scalar(0, 0, 0)); // Reseta o frame para preto
+                    y = 0;
+                }
+            }
+
+            if (binary[i] == '1') {
+                frame.at<Vec3b>(y, x) = Vec3b(B1, G1, R1); // Define o pixel como branco
+            } else {
+                frame.at<Vec3b>(y, x) = Vec3b(B0, G0, R0); // Define o pixel como preto
+            }
+            x++;
+        }
+    }
+
+    // Adiciona o último frame ao vídeo (se houver dados restantes)
+    if (x != 0 || y != 0) {
+        video.write(frame);
+    }
+
+    // Fecha o arquivo de entrada e o vídeo
+    inFile.close();
+    video.release();
+
+    cout << "Vídeo criado com sucesso: " << outVideo << endl;
+    cout << "Dados codificados com sucesso!" << endl;
 }
 
 
