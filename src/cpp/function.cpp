@@ -174,9 +174,12 @@ void generateVideo(const string& inputPath) {
         cerr << "Erro ao abrir o arquivo de entrada: " << inputPath << endl;
         return;
     }
+    // compressão em HuffYUV (FOURCC = "HFYU") → Sem perdas e mais eficiente que FFV1.
+    VideoWriter video(outVideo, VideoWriter::fourcc('H', 'F', 'Y', 'U'), 30, Size(X, Y));
 
-    // Configura o VideoWriter para criar o vídeo
-    VideoWriter video(outVideo, VideoWriter::fourcc('F', 'F', 'V', '1'), 30, Size(X, Y));
+    // compressão em FFV1 (FOURCC = "FFV1") → Totalmente sem perdas, mas gera arquivos grandes.
+    // VideoWriter video(outVideo, VideoWriter::fourcc('F', 'F', 'V', '1'), 30, Size(X, Y));
+
     if (!video.isOpened()) {
         cerr << "Erro ao criar o arquivo de vídeo: " << outVideo << endl;
         inFile.close();
@@ -386,6 +389,8 @@ string openFile(int i) {
     cout << "Digite o caminho do arquivo com a extensao: ";
     cin >> keyboard;
     if (i == DOIS) {
+        // Create the output directory if it doesn't exist
+        filesystem::create_directory(decodedPath);
         keyboard = decodedPath + keyboard + "";
     }
     return keyboard;
