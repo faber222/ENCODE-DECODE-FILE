@@ -2,13 +2,15 @@
 
 
 int main(int argc, char* argv[]) {
-	BmpImg img(X, Y);
-	img.init(X, Y); // Inicializa uma imagem BMP com tamanho 512x512
-	drawImg(img); // Desenha a imagem inicial
-	fstream file;
 
-	unsigned char byte;
-	char binary[N]; // Representação binária de 8 bits mais um para o caractere nulo
+	// Descomente para poder usar a versão que gera imagens
+	// BmpImg img(X, Y);
+	// img.init(X, Y); // Inicializa uma imagem BMP com tamanho 512x512
+	// drawImg(img); // Desenha a imagem inicial
+	// fstream file;
+
+	// unsigned char byte;
+	// char binary[N]; // Representação binária de 8 bits mais um para o caractere nulo
 	int opcao;
 	string keyboard;
 
@@ -22,6 +24,7 @@ int main(int argc, char* argv[]) {
 
 	// Verifica a opção escolhida pelo usuário
 	switch (opcao) {
+		// GERA IMAGEM
 		// case UM:
 		// 	cout << "Você escolheu a opção " + to_string(UM) << endl << endl;
 		// 	wread(img, openFile(UM));
@@ -35,6 +38,8 @@ int main(int argc, char* argv[]) {
 		// 	rread(img, openFile(DOIS)); // Recupera os dados da imagem BMP
 		// 	cout << "Dados decodificados com sucesso!" << endl;
 		// 	break;
+
+		// NÃO GERA IMAGEM
 		case UM:
 			cout << "Você escolheu a opção " + to_string(UM) << endl << endl;
 			generateVideo(openFile(UM)); // Cria o vídeo diretamente a partir do arquivo de entrada
@@ -43,12 +48,11 @@ int main(int argc, char* argv[]) {
 		case DOIS:
 			cout << "Você escolheu a opção " + to_string(DOIS) << endl << endl;
 			processVideoToFile(outputVideo + videoFileExtension, openFile(DOIS));
-			
 			break;
 
 		case 0:
 			cout << "Saindo do programa..." << endl;
-			return 0; 
+			return 0;
 		default:
 			cout << "Opção inválida" << endl;
 			break;
