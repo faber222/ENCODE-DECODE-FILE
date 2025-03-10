@@ -8,8 +8,8 @@
       "args": [],
       "stopAtEntry": false,
       "externalConsole": true,
-      "cwd": "c:/Users/fa056564/Documents/faber/ENCODE-DECODE-FILE/src",
-      "program": "c:/Users/fa056564/Documents/faber/ENCODE-DECODE-FILE/src/build/Debug/outDebug",
+      "cwd": "c:/Users/fa056564/Documents/faber/ENCODE-DECODE-FILE/src/cpp",
+      "program": "c:/Users/fa056564/Documents/faber/ENCODE-DECODE-FILE/src/cpp/build/Debug/outDebug",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [
